@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const User = require('../models/user');
 const TemporaryUser = require('../models/temporaryUser');
-const { sendOtp, verifyOtp } = require('../otpService');
+const { sendOtp, resendOtp, verifyOtp } = require('../otpService');
 const { hashPassword } = require('../passwordUtils');
 const VerificationToken = require('../models/verificationToken');
 
@@ -72,6 +72,23 @@ const registerUserHandler = async (request, response) => {
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
+};
+
+/**
+ * Resend OTP to user's email
+ * @param {Object} request object from Express
+ * @param {Object} response object from Express
+ * @returns the return value of sendOtp function
+ * @returns EMAIL REQUIRED message if email not present in request body
+ */
+const resendOTPHandler = async (request, response) => {
+    const { email } = request.body;
+
+    if (!email) {
+        return response.status(400).json({ message: 'Email required' });
+    }
+
+    resendOtp(email);
 };
 
 /**
@@ -182,4 +199,9 @@ const setPasswordHandler = async (request, response) => {
     }
 };
 
-module.exports = { registerUserHandler, verifyOTPHandler, setPasswordHandler };
+module.exports = {
+    registerUserHandler,
+    resendOTPHandler,
+    verifyOTPHandler,
+    setPasswordHandler,
+};

@@ -56,6 +56,22 @@ async function sendOtp(recipientEmail) {
 }
 
 /**
+ * Resends the OTP to the recipient's email
+ * @param {String} recipientEmail email to resend OTP to
+ * @returns the return value of sendOtp function
+ */
+async function resendOtp(recipientEmail) {
+    try {
+        await Otp.deleteMany({ recipientEmail });
+
+        sendOtp(recipientEmail);
+    } catch (error) {
+        console.error(`Error resending OTP to ${recipientEmail}: ${error}`);
+        return { success: false, message: 'Error resending OTP' };
+    }
+}
+
+/**
  * Verify the OTP sent by the user
  * @param {String} recipientEmail
  * @param {String} otp inputted by user
@@ -96,4 +112,4 @@ async function verifyOtp(recipientEmail, otp) {
     }
 }
 
-module.exports = { sendOtp, verifyOtp };
+module.exports = { sendOtp, resendOtp, verifyOtp };
