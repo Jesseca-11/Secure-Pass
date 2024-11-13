@@ -1,7 +1,9 @@
+const crypto = require('crypto');
 const User = require('../models/user');
 const TemporaryUser = require('../models/temporaryUser');
 const { sendOtp, verifyOtp } = require('../otpService');
 const { hashPassword } = require('../passwordUtils');
+const VerificationToken = require('../models/verificationToken');
 
 /**
  * Register a new user
@@ -91,7 +93,22 @@ const verifyOTPHandler = async (request, response) => {
 
         if (otpVerification.success) {
             // If OTP is verified, user is now ready to set a password
-            return response.status(200).json({ message: 'OTP verified' });
+            const tokenAsProof = crypto.randomBytes(16).toString('hex');
+
+            try {
+                await VerificationToken.create({
+                    email,
+                    token: tokenAsProof,
+                    createdAt: new Date(),
+                });
+                return response
+                    .status(200)
+                    .json({ message: 'OTP verified', data: tokenAsProof });
+            } catch (error) {
+                return response.status(500).json({
+                    error: `Verification token creation failed (${error.message})`,
+                });
+            }
         }
         return response.status(400).json({ message: otpVerification.error });
     } catch (error) {
@@ -106,11 +123,13 @@ const verifyOTPHandler = async (request, response) => {
  * @returns newly created user document if successful
  */
 const setPasswordHandler = async (request, response) => {
-    const { email, password, confirmPassword } = request.body;
+    const { email, password, confirmPassword, verificationToken } =
+        request.body;
 
-    if (!email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword || !verificationToken) {
         return response.status(400).json({
-            message: 'Email, password, and confirm password required',
+            message:
+                'Email, password, confirm password and verification token required',
         });
     }
 
@@ -119,10 +138,22 @@ const setPasswordHandler = async (request, response) => {
     }
 
     try {
+        const storedTokenDocument = await VerificationToken.findOne({ email });
+
+        // Check if the token provided by the user matches the one stored in the database
+        if (
+            !storedTokenDocument ||
+            storedTokenDocument.token !== verificationToken
+        ) {
+            return response
+                .status(400)
+                .json({ message: 'Invalid or expired verification token' });
+        }
+
         // Retrieve temporary user details from database
         const temporaryUser = await TemporaryUser.findOne({ email });
         if (!temporaryUser) {
-            response
+            return response
                 .status(400)
                 .json({ message: 'Unverified or invalid user' });
         }
@@ -140,8 +171,10 @@ const setPasswordHandler = async (request, response) => {
             password: hashedPassword,
         });
 
-        // Delete temporary user document from database
+        // Delete temporary user document from database, delete verification token from database
         await TemporaryUser.findOneAndDelete({ email });
+        await VerificationToken.findOneAndDelete({ email });
+
         console.log('User registered successfully');
         return response.status(201).json(newUser);
     } catch (error) {
