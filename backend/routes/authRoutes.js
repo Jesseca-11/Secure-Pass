@@ -1,5 +1,6 @@
 const { Router} = require('express');
-const {verifyJWTTokenMiddleware, authenticateUserHandler} = require('../controllers/authController');
+const authenticateUserHandler = require('../controllers/authController');
+const verifyJWTTokenMiddleware = require('../middleware/verifyToken');
 
 const authRouter = Router();
 

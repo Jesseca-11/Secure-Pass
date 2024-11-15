@@ -7,7 +7,7 @@ const {
     loginUserHandler,
     logoutUserHandler,
 } = require('../controllers/userController');
-const { verifyJWTTokenMiddleware } = require('../controllers/authController');
+const verifyJWTTokenMiddleware = require('../middleware/verifyToken');
 
 const userRouter = Router();
 
