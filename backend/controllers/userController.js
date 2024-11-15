@@ -1,8 +1,11 @@
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const OTP = require('../models/otp');
 const TemporaryUser = require('../models/temporaryUser');
+const BlacklistedToken = require('../models/blacklistedToken');
 const { sendOtp, resendOtp, verifyOtp } = require('../otpService');
-const { hashPassword } = require('../passwordUtils');
+const { hashPassword, checkPassword } = require('../passwordUtils');
 const VerificationToken = require('../models/verificationToken');
 
 /**
@@ -40,7 +43,6 @@ const registerUserHandler = async (request, response) => {
                     email,
                     phone,
                 });
-                console.log('OTP sent to email');
                 return response
                     .status(201)
                     .json({ message: 'OTP sent to email' });
@@ -62,7 +64,6 @@ const registerUserHandler = async (request, response) => {
                     domainName: domainName ? domainName : 'nil',
                     businessHandle,
                 });
-                console.log('OTP sent to email');
                 return response
                     .status(201)
                     .json({ message: 'OTP sent to email' });
@@ -118,6 +119,7 @@ const verifyOTPHandler = async (request, response) => {
                     token: tokenAsProof,
                     createdAt: new Date(),
                 });
+                console.log('OTP verified: Verification token created');
                 return response
                     .status(200)
                     .json({ message: 'OTP verified', data: tokenAsProof });
@@ -189,11 +191,103 @@ const setPasswordHandler = async (request, response) => {
         });
 
         // Delete temporary user document from database, delete verification token from database
-        await TemporaryUser.findOneAndDelete({ email });
+        await TemporaryUser.deleteMany({ email });
         await VerificationToken.findOneAndDelete({ email });
 
         console.log('User registered successfully');
         return response.status(201).json(newUser);
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * Login user with email/phone and password
+ * @param {Object} request object from Express
+ * @param {Object} response object from Express
+ * @returns JWT token to be used by client for authentication on subsequent requests
+ */
+const loginUserHandler = async (request, response) => {
+    const { emailPhone, password } = request.body;
+
+    // Validate required fields
+    if (!emailPhone || !password)
+        return response
+            .status(400)
+            .json({ error: 'Email/phone and password required' });
+
+    try {
+        // Attempt to find user by email
+        let user;
+        if (emailPhone.includes('@')) {
+            user = await User.findOne({ email: emailPhone });
+        } else {
+            user = await User.findOne({ phone: emailPhone });
+        }
+
+        if (user) {
+            // Validate the password
+            const isValidPassword = checkPassword(password, user.password);
+
+            if (isValidPassword) {
+                // Generate a JWT with user details
+                jwt.sign(
+                    { id: user._id, email: user.email, name: user.name },
+                    process.env.JWT_SECRET_KEY,
+                    { expiresIn: '24h' },
+                    (error, token) => {
+                        if (error)
+                            return response.status(500).json({
+                                error: `Error generating token (${error.message})`,
+                            });
+
+                        // Respond with a 200 saying the user is logged in and send the token
+                        return response.status(200).json({
+                            'Logged in as: ': user.email,
+                            token: token,
+                        });
+                    }
+                );
+            } else {
+                // If password is invalid, respond with an unauthorized error
+                response.status(401).json({ error: 'Invalid password' });
+            }
+        } else {
+            // If no user is found, respond with a not found error
+            response.status(404).json({ error: 'User not found' });
+        }
+    } catch (error) {
+        // Handle server errors
+        response.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * Logout user by blacklisting the token
+ * @param {Object} request object from Express
+ * @param {Object} response object from Express
+ * @returns 200 status code if successful
+ * @returns 500 status code if error occurs
+ */
+const logoutUserHandler = async (request, response) => {
+    const user = request.user;
+    const token = request.token;
+
+    try {
+        // Blacklist the token
+        // This is where you would store the token in a database
+        // and check it on every request to protected routes
+        // to see if the user is logged in with a valid token or not
+        await BlacklistedToken.create({
+            userId: user.id,
+            user: user.email,
+            token,
+            blacklistedAt: new Date(),
+        });
+        console.log(`User (${user.email}) logged out`);
+        response
+            .status(200)
+            .json({ message: `User (${user.email}) logged out` });
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
@@ -204,4 +298,6 @@ module.exports = {
     resendOTPHandler,
     verifyOTPHandler,
     setPasswordHandler,
+    loginUserHandler,
+    logoutUserHandler,
 };

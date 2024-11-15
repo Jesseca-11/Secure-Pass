@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const Otp = require('./models/otp');
@@ -39,7 +40,13 @@ async function sendOtp(recipientEmail) {
     };
 
     try {
+        // Delete any existing OTP requests for the email, in case user spams send button
+        await Otp.deleteMany({ recipientEmail });
+
+        // Send email with OTP
         await transporter.sendMail(mailOptions);
+
+        // Store OTP in database
         await Otp.create({
             recipientEmail,
             otp,
@@ -50,8 +57,13 @@ async function sendOtp(recipientEmail) {
 
         return { success: true, message: 'OTP sent successfully' };
     } catch (error) {
-        console.error(`Error sending OTP to ${recipientEmail}: ${error}`);
-        return { success: false, message: 'Error sending OTP' };
+        if (error instanceof mongoose.Error) {
+            console.error(`Database Error: ${error.message}`);
+            return { success: false, message: `Database Error: ${error.message}` };
+        } else {
+            console.error(`Error sending OTP to ${recipientEmail}: ${error}`);
+            return { success: false, message: `Error sending OTP: ${error}` };
+        }
     }
 }
 
@@ -62,6 +74,8 @@ async function sendOtp(recipientEmail) {
  */
 async function resendOtp(recipientEmail) {
     try {
+        // Delete any existing OTP requests for the email, in case user spams resend button
+        // Or in case user requests a new OTP before the previous one expires
         await Otp.deleteMany({ recipientEmail });
 
         sendOtp(recipientEmail);
