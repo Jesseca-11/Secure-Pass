@@ -1,11 +1,11 @@
 const express = require('express');
 require('dotenv').config();
 const mongoose = require('mongoose');
-const cookieParser = require('cookie-parser');
 const app = express();
 
 const userRouter = require('./routes/userRoutes');
 const authRouter = require('./routes/authRoutes');
+const disputeRouter = require('./routes/disputeRoutes');
 
 const PORT = process.env.PORT || 4000;
 
@@ -21,9 +21,9 @@ const connectToDatabase = async () => {
 connectToDatabase();
 
 app.use(express.json());
-app.use(cookieParser());
 app.use('/', userRouter);
 app.use('/', authRouter);
+app.use('/', disputeRouter);
 
 app.get('/', (request, response) => {
     response.json('Server ok!');
