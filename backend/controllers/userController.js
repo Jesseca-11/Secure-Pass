@@ -9,9 +9,8 @@ const { hashPassword, checkPassword } = require('../passwordUtils');
 const VerificationToken = require('../models/verificationToken');
 
 /**
- * Register a new user
- * If user is a single user, name, email, and phone are required
- * If user is a business user, email, phone, and business handle are required
+ * Register a new single user
+ * As a single user, name, email, and phone are required
  * OTP is sent to user's email for verification
  * @param {object} request from Express
  * @param {object} response from Express
@@ -19,57 +18,76 @@ const VerificationToken = require('../models/verificationToken');
  * @returns 400 status code if required fields are not provided
  * @returns 201 status code if OTP is sent successfully
  */
-const registerUserHandler = async (request, response) => {
-    const { name, businessName, email, phone, domainName, businessHandle } =
+const registerSingleUserHandler = async (request, response) => {
+    const { name, email, phone } = request.body;
+
+    try {
+        const userExists = await User.findOne({ email: email });
+
+        if (!userExists) {
+            if (!name || !email || !phone) {
+                return response.status(400).json({
+                    message: 'Name, email, and phone number required',
+                });
+            }
+
+            await sendOtp(email);
+
+            await TemporaryUser.create({
+                status: 'single_user',
+                name,
+                email,
+                phone,
+            });
+            return response.status(201).json({ message: 'OTP sent to email' });
+        }
+        return response.status(409).json({ message: 'User already exists' });
+    } catch (error) {
+        response.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * Register a new business user
+ * As a business user, business name, email, phone, and business handle are required
+ * OTP is sent to user's email for verification
+ * @param {object} request from Express
+ * @param {object} response from Express
+ * @returns 409 status code if user already exists
+ * @returns 400 status code if required fields are not provided
+ * @returns 201 status code if OTP is sent successfully
+ */
+const registerBusinessUserHandler = async (request, response) => {
+    const { businessName, email, phone, domainName, businessHandle } =
         request.body;
 
     try {
         const userExists = await User.findOne({ email: email });
 
         if (!userExists) {
-            if (!businessName) {
-                // Means user is a single user
-                if (!name || !email || !phone) {
-                    return response.status(400).json({
-                        message: 'Name, email, and phone number required',
-                    });
-                }
-
-                await sendOtp(email);
-
-                await TemporaryUser.create({
-                    status: 'single_user',
-                    name,
-                    email,
-                    phone,
+            // Means user is a business user
+            if (!businessName || !email || !phone || !businessHandle) {
+                return response.status(400).json({
+                    message:
+                        'Business name, email, phone number and business handle required',
                 });
-                return response
-                    .status(201)
-                    .json({ message: 'OTP sent to email' });
-            } else {
-                // Means user is a business user
-                if (!email || !phone || !businessHandle) {
-                    return response.status(400).json({
-                        message:
-                            'Email, phone number and business handle required',
-                    });
-                }
-
-                await sendOtp(email);
-                await TemporaryUser.create({
-                    status: 'business_user',
-                    name: businessName,
-                    email,
-                    phone,
-                    domainName: domainName ? domainName : 'nil',
-                    businessHandle,
-                });
-                return response
-                    .status(201)
-                    .json({ message: 'OTP sent to email' });
             }
+
+            await sendOtp(email);
+            await TemporaryUser.create({
+                status: 'business_user',
+                name: businessName,
+                email,
+                phone,
+                domainName: domainName ? domainName : 'nil',
+                businessHandle,
+            });
+            return response.status(201).json({ message: 'OTP sent to email' });
+        } else {
+            return response
+                .status(409)
+                .json({ message: 'User already exists' });
         }
-        response.status(409).json({ message: 'User already exists' });
     } catch (error) {
         response.status(500).json({ error: error.message });
     }
@@ -294,7 +312,8 @@ const logoutUserHandler = async (request, response) => {
 };
 
 module.exports = {
-    registerUserHandler,
+    registerSingleUserHandler,
+    registerBusinessUserHandler,
     resendOTPHandler,
     verifyOTPHandler,
     setPasswordHandler,

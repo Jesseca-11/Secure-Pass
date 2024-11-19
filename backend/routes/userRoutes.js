@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const {
-    registerUserHandler,
+    registerSingleUserHandler,
+    registerBusinessUserHandler,
     resendOTPHandler,
     verifyOTPHandler,
     setPasswordHandler,
@@ -11,7 +12,8 @@ const verifyJWTTokenMiddleware = require('../middleware/verifyToken');
 
 const userRouter = Router();
 
-userRouter.post('/register', registerUserHandler);
+userRouter.post('/register-single', registerSingleUserHandler);
+userRouter.post('/register-business', registerBusinessUserHandler);
 userRouter.post('/resend-otp', resendOTPHandler);
 userRouter.post('/verify-otp', verifyOTPHandler);
 userRouter.post('/set-password', setPasswordHandler);

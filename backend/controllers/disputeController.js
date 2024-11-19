@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 const Dispute = require('../models/dispute');
-// const uploadImage = require('../middleware/upload');
+const BlacklistedToken = require('../models/blacklistedToken');
 
 /**
  * creates a dispute(complaint) form
@@ -9,7 +10,44 @@ const Dispute = require('../models/dispute');
  * @returns the created dispute document with a 201 status code
  */
 const createDisputeHandler = async (request, response) => {
-    const { user } = request.user;
+    let authenticatedUser = null;
+
+    const authHeader = request.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return response
+            .status(401)
+            .json({ message: 'Access token is missing or invalid' });
+    }
+
+    try {
+        // First check if token exists in the blacklist
+        const tokenExistsOnBlacklist = await BlacklistedToken.findOne({
+            token,
+        });
+
+        if (tokenExistsOnBlacklist)
+            return response
+                .status(403)
+                .json({ message: 'Token has been invalidated' });
+
+        // If not in blacklist, verify the token
+        jwt.verify(token, process.env.JWT_SECRET_KEY, (error, user) => {
+            if (error) {
+                return response.status(403).json({ message: 'Invalid token' });
+            }
+
+            authenticatedUser = user;
+        });
+    } catch (error) {
+        return response
+            .status(500)
+            .json({ error: `JWT error (${error.mesage})` });
+    }
+
+    console.log('User:', authenticatedUser);
+
     const { title, details, additionalNotes } = request.body;
     const productImage = request.file ? request.file.path : null;
 
@@ -20,8 +58,8 @@ const createDisputeHandler = async (request, response) => {
 
     try {
         const disputeDocument = await Dispute.create({
-            userId: user.id,
-            createdBy: user.email,
+            userId: authenticatedUser.id,
+            createdBy: authenticatedUser.email,
             title,
             details,
             productImage,

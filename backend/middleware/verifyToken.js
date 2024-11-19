@@ -11,7 +11,8 @@ const BlacklistedToken = require('../models/blacklistedToken');
  * @returns INVALID TOKEN if the token provided is invalid
  */
 const verifyJWTTokenMiddleware = async (request, response, next) => {
-    const authHeader = request.headers['authorization'];
+    const authHeader =
+        request.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
@@ -22,7 +23,9 @@ const verifyJWTTokenMiddleware = async (request, response, next) => {
 
     try {
         // First check if token exists in the blacklist
-        const tokenExistsOnBlacklist = await BlacklistedToken.findOne({ token });
+        const tokenExistsOnBlacklist = await BlacklistedToken.findOne({
+            token,
+        });
 
         if (tokenExistsOnBlacklist)
             return response
