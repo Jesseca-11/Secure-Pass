@@ -1,6 +1,7 @@
 const express = require('express');
 require('dotenv').config();
 const mongoose = require('mongoose');
+const cors = require('cors');
 const app = express();
 
 const userRouter = require('./routes/userRoutes');
@@ -20,6 +21,13 @@ const connectToDatabase = async () => {
 
 connectToDatabase();
 
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    credentials: true,
+    optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/', userRouter);
 app.use('/', authRouter);
