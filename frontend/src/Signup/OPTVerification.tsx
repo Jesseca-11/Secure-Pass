@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const OTPVerification: React.FC = () => {
   const [otp, setOtp] = useState("");
@@ -8,18 +8,32 @@ const OTPVerification: React.FC = () => {
   const [isVerified, setIsVerified] = useState(false);
   const navigate = useNavigate();
 
+  const { state } = useLocation();
+
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setOtp(e.target.value);
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
+    console.log("data", {
+      email: String(state.email),
+      otp: otp,
+    })
     e.preventDefault();
 
     try {
       // Replace with your actual API URL
-      const response = await axios.post("http://localhost:4000/verify-otp", {
-        otp: otp,
-      });
+      const response = await axios.post(
+        "http://localhost:4000/verify-otp",
+        JSON.stringify({
+          email: String(state.email),
+          otp: otp,
+        }),
+        {
+          headers: { "Content-Type": "application/json " },
+          withCredentials: true,
+        }
+      );
 
       if (response.data.success) {
         setIsVerified(true);

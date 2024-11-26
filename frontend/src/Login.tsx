@@ -1,8 +1,12 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -10,8 +14,38 @@ const Login: React.FC = () => {
     setError(""); 
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const clearForm = () => {
+    setFormData({
+    email: "",
+    password: "",
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    try {
+      
+      const response = await axios.post("http://localhost:4000/login", JSON.stringify({
+        
+          name: formData.password,
+          email: formData.email,
+          
+          }),
+          {
+            headers: {"Content-Type": "application/json "},
+            withCredentials: true
+          }
+        );
+        console.log(JSON.stringify(response?.data))
+        alert("Signup successful! You are now logged in.");
+        navigate("/optverification");
+        clearForm();
+} catch (error) {
+  console.error("Error during signup:", error);
+  alert("Signup failed. Please try again.");
+}
+
 
 
     if (!formData.email || !formData.password) {
