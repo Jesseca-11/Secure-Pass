@@ -9,6 +9,10 @@ import BusinessSignup from './Signup/BusinessSignup';
 import Login from './Login';
 import DisputeResolution from './DisputeResoultion';
 import OTPVerification from './Signup/OPTVerification';
+import CreatePassword from './Signup/PasswordCreation';
+import Dashboard from './Dashboard';
+import ProtectedRoute from './ProtectedRoutes';
+import DisputeSuccess from './DisputeSuccess';
 
 function App() {
   return (
@@ -22,8 +26,12 @@ function App() {
           <Route path='/Customer-Signup' element={<CustomerSignup />} />
           <Route path='/Business-Signup' element={<BusinessSignup />} />
           <Route path='/optverification' element={ <OTPVerification /> } />
+          <Route path='/create-password' element={ <CreatePassword /> } />
+          <Route path='/dispute-success' element={ <DisputeSuccess /> } />
 
-          <Route path='/dispute-resolution' element={<DisputeResolution />} />
+          <Route path="/dashboard" element={<ProtectedRoute> <Dashboard /> </ProtectedRoute> } />
+
+          <Route path='/dispute-resolution' element={ <ProtectedRoute> <DisputeResolution /> </ProtectedRoute>} />
         </Routes>
         </Router>
     </div>

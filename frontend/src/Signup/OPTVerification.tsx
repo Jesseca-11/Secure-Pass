@@ -18,11 +18,10 @@ const OTPVerification: React.FC = () => {
     console.log("data", {
       email: String(state.email),
       otp: otp,
-    })
+    });
     e.preventDefault();
 
     try {
-      // Replace with your actual API URL
       const response = await axios.post(
         "http://localhost:4000/verify-otp",
         JSON.stringify({
@@ -35,10 +34,12 @@ const OTPVerification: React.FC = () => {
         }
       );
 
-      if (response.data.success) {
+      if (response.status === 200) {
+        console.log("response1", response);
         setIsVerified(true);
-        navigate("/create-password");
+        navigate("/create-password", { state: {email: state.email, verificationToken: response.data.data} } );
       } else {
+        console.log("response2", response);
         setError("Invalid OTP. Please try again.");
       }
     } catch (error) {

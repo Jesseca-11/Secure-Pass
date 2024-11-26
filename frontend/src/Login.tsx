@@ -1,59 +1,63 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContex";
+
+
 
 const Login: React.FC = () => {
-  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [formData, setFormData] = useState({ emailPhone: "", password: "" });
   const [error, setError] = useState("");
-
+  const { setAuthData } = useAuth();
   const navigate = useNavigate();
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    setError(""); 
+    setError("");
   };
 
   const clearForm = () => {
     setFormData({
-    email: "",
-    password: "",
+      emailPhone: "",
+      password: "",
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    try {
-      
-      const response = await axios.post("http://localhost:4000/login", JSON.stringify({
-        
-          name: formData.password,
-          email: formData.email,
-          
-          }),
-          {
-            headers: {"Content-Type": "application/json "},
-            withCredentials: true
-          }
-        );
-        console.log(JSON.stringify(response?.data))
-        alert("Signup successful! You are now logged in.");
-        navigate("/optverification");
-        clearForm();
-} catch (error) {
-  console.error("Error during signup:", error);
-  alert("Signup failed. Please try again.");
-}
-
-
-
-    if (!formData.email || !formData.password) {
+    if (!formData.emailPhone || !formData.password) {
       setError("Both fields are required.");
       return;
     }
-    console.log("Logging in with:", formData);
-    alert("Login successful!");
+
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/login",
+        JSON.stringify({
+          password: formData.password,
+          emailPhone: formData.emailPhone,
+        }),
+        {
+          headers: { "Content-Type": "application/json " },
+          withCredentials: true,
+        }
+      );
+
+      if (response.status === 200) {
+        const { token, email } = response.data;
+        setAuthData(token, email);
+        navigate("/dashboard");
+        clearForm();
+      } else {
+        setError("Invalid login credentials.");
+      }
+    } catch (error) {
+      console.error("Error during logi:", error);
+      setError("Login failed. Please try again.");
+    }
   };
 
   return (
@@ -61,7 +65,6 @@ const Login: React.FC = () => {
       <div className="max-w-lg w-full p-6 bg-white rounded-lg shadow-md py-8">
         <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
 
-        
         {error && (
           <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-center">
             {error}
@@ -70,24 +73,30 @@ const Login: React.FC = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4 ">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
+            <label
+              htmlFor="emailPhone"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Email/Phone
             </label>
             <input
               type="email"
-              id="email"
-              name="email"
-              value={formData.email}
+              id="emailPhone"
+              name="emailPhone"
+              value={formData.emailPhone}
               onChange={handleInputChange}
               className="mt-1 block w-full px-4 py-5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your email"
+              autoComplete="new-password"
               required
             />
           </div>
 
-        
           <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
               Password
             </label>
             <input
@@ -98,6 +107,7 @@ const Login: React.FC = () => {
               onChange={handleInputChange}
               className="mt-1 block w-full px-4 py-5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               placeholder="Enter your password"
+              autoComplete="new-password"
               required
             />
           </div>

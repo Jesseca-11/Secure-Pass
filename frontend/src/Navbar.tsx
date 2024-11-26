@@ -1,32 +1,45 @@
-import React from 'react';
-import { useState } from 'react';
-import { Dialog, DialogPanel } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import React, { useState } from "react";
+import { Dialog, DialogPanel } from "@headlessui/react";
+import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useAuth } from "./context/AuthContex";
+import { Link, useNavigate } from "react-router-dom";
 
 const navigation = [
-  { name: 'Home', href: '/' },
-  { name: 'Transactions', href: '/transaction' },
-  { name: 'Dispute Resolution', href: '/dispute-resolution' },
-  { name: 'Login', href: '/login' },
+  { name: "Home", href: "/" },
+  { name: "Transactions", href: "/transaction" },
+  { name: "Dispute Resolution", href: "/dispute-resolution" },
+  // { name: "Login", href: "/login" },
 
   // { name: 'Signup', href: '#' },
-]
+];
 
-export default function Example() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+const Navbar: React.FC = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { token, setAuthData } = useAuth();
+  const navigate = useNavigate();
 
+  const handleLogout = () => {
+    setAuthData("", "");
+    navigate("/login");
+  };
+
+  const callHref: any = (href: string) => {
+    navigate(href);
+  };
 
   return (
-
-
     <div className="bg-white">
       <header className=" inset-x-  top-0 z-50">
-        <nav aria-label="Global" className="flex items-center justify-between p-6 lg:px-8">
+        <nav
+          aria-label="Global"
+          className="flex items-center justify-between p-6 lg:px-8"
+        >
           <div className="flex lg:flex-1">
-            <a href="/signup" className="-m-1.5 p-1.5 text-bold text-3xl  ">
+            <Link to="/signup" className="-m-1.5 p-1.5 text-bold text-3xl  ">
               <span className="sr-only "></span>
-                  <span className='text-black-500 ' > SECURE </span> <span className='z-40 absolute  text-blue-700 '>XPAY</span>
-            </a>
+              <span className="text-black-500 "> SECURE </span>{" "}
+              <span className="z-40 absolute  text-blue-700 ">XPAY</span>
+            </Link>
           </div>
           <div className="flex lg:hidden">
             <button
@@ -40,26 +53,53 @@ export default function Example() {
           </div>
           <div className="hidden lg:flex lg:gap-x-12">
             {navigation.map((item) => (
-              <a key={item.name} href={item.href} className="text-sm/6 text-xl font-semibold text-gray-900">
+              <Link
+                key={item.name}
+                to={item.href}
+                className="text-sm/6 text-xl font-semibold text-gray-900"
+              >
                 {item.name}
-              </a>
+              </Link>
             ))}
-            <a href="/signup" className="text-sm/6 text-xl font-semibold text-gray-700  bg-blue-300 border px-4 py-0.2 hover:bg-blue-600 hover:text-black-900 rounded-full">Signup</a>
-          </div>
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <a href="#" className="text-sm/6 text-xl font-bold text-gray-900 rounded-full px-3 py-2.5 hover:bg-gray-300 ">
-              Get started <span aria-hidden="true">&rarr;</span>
-            </a>
+
+            {!token ? (
+              <>
+                <Link
+                  to="/login"
+                  className=" text-xl font-semibold text-gray-700"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className=" text-xl font-semibold text-gray-700 bg-blue-300 border px-4 py-1 hover:bg-blue-600 hover:text-black rounded-full"
+                >
+                  Signup
+                </Link>
+              </>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className=" text-xl font-semibold text-gray-700 bg-green-300 border px-4 py-1 hover:bg-green-600 hover:text-white rounded-full"
+              >
+                Logout
+              </button>
+            )}
           </div>
         </nav>
-        <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">
+        <Dialog
+          open={mobileMenuOpen}
+          onClose={setMobileMenuOpen}
+          className="lg:hidden"
+        >
           <div className="fixed inset-0 z-50" />
           <DialogPanel className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
             <div className="flex items-center justify-between">
-              <a href="/signup" className="-m-1.5 p-1.5">
+              <Link to="/signup" className="-m-1.5 p-1.5">
                 <span className="sr-only">Your Company</span>
-                <span className='text-black-500 ' > SECURE </span> <span className='z-40 absolute  text-blue-700 '>XPAY</span>
-              </a>
+                <span className="text-black-500 "> SECURE </span>{" "}
+                <span className="z-40 absolute  text-blue-700 ">XPAY</span>
+              </Link>
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(false)}
@@ -73,23 +113,37 @@ export default function Example() {
               <div className="-my-6 divide-y divide-gray-500/10">
                 <div className="space-y-2 py-6">
                   {navigation.map((item) => (
-                    <a
+                    <Link
                       key={item.name}
-                      href={item.href}
+                      to={item.href}
                       className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
                     >
                       {item.name}
-                    </a>
+                    </Link>
                   ))}
-                  <a href="/signup" className=" -mx-3 block t text-base/7 font-semibold text-gray-900  border px-3 py-2  rounded-full hover:bg-gray-100">Signup</a>
-                </div>
-                <div className="py-6">
-                  <a
-                    href="/signup"
-                    className="-mx-3 block rounded-full px-3 py-2.5  text-lg font-bold text-gray-900 hover:bg-gray-400"
-                  >
-                    Get started
-                  </a>
+                  {!token ? (
+                    <>
+                      <Link
+                        to="/login"
+                        className="block rounded-lg px-3 py-2 sm:hidden text-base font-semibold text-gray-900 hover:bg-gray-50"
+                      >
+                        Login
+                      </Link>
+                      <Link
+                        to="/signup"
+                        className="block rounded-lg px-3 py-2 text-base font-semibold text-gray-900 hover:bg-gray-50"
+                      >
+                        Signup
+                      </Link>
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleLogout}
+                      className="block w-full text-left rounded-lg px-3 py-2 text-base font-semibold text-red-600 hover:bg-red-100"
+                    >
+                      Logout
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -97,8 +151,7 @@ export default function Example() {
         </Dialog>
       </header>
     </div>
-
   );
-}
+};
 
-// export default Navbar;
+export default Navbar;

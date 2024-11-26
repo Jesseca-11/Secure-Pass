@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContex";
 
 const DisputeResolution: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -8,6 +11,10 @@ const DisputeResolution: React.FC = () => {
     additionalNotes: "",
     productImage: null as File | null,
   });
+
+  const navigate = useNavigate();
+  const { token } = useAuth()
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -35,14 +42,32 @@ const DisputeResolution: React.FC = () => {
 
   
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
-    
     console.log("Dispute Data:", formData);
 
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/dispute",
+        JSON.stringify({
+          title: formData.title,
+          transactionDetails: formData.transactionDetails,
+          additionalNotes: formData.additionalNotes,
+          productImage: formData.productImage,
+        }),
+        {
+          headers: { "Content-Type": "application/json ",  Authorization: `Bearer ${token}`, },
+          withCredentials: true,
+        }
+      );
+      console.log(JSON.stringify(response?.data));
+      console.log("response3", response)
+      navigate("/dispute-success" );
+      clearForm();
+    } catch (error) {
+      console.error("Error during signup:", error);
     
-    alert("Dispute submitted successfully!");
+    }
 
     // @ts-ignore
     

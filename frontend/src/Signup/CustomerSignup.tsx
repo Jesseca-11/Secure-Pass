@@ -31,11 +31,9 @@ const CustomerSignup: React.FC = () => {
     try {
       
         const response = await axios.post("http://localhost:4000/register-single", JSON.stringify({
-          
             name: userData.name,
             email: userData.email,
             phone: userData.phone,
-            
             }),
             {
               headers: {"Content-Type": "application/json "},
@@ -43,8 +41,7 @@ const CustomerSignup: React.FC = () => {
             }
           );
           console.log(JSON.stringify(response?.data))
-          alert("Signup successful! You are now logged in.");
-          navigate("/optverification");
+          navigate("/optverification", { state: {email: userData.email} } );
           clearForm();
   } catch (error) {
     console.error("Error during signup:", error);

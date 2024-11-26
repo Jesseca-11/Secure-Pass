@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Used for redirection
+import { useNavigate, useLocation } from "react-router-dom"; // Used for redirection
 
 const CreatePassword: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
+
+  const { state } = useLocation();
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -26,18 +28,23 @@ const CreatePassword: React.FC = () => {
 
     try {
       const response = await axios.post("http://localhost:4000/set-password", {
+        email:String(state.email),
         password: password,
+        confirmPassword: confirmPassword,
+        verificationToken:String(state.verificationToken),
       });
 
-      if (response.data.success) {
+      if (response.status === 201) {
+        console.log("password1", response)
         alert("Password created successfully!");
         navigate("/login"); 
       } else {
+        console.log("password2", response)
         setError("Failed to create password. Please try again.");
       }
     } catch (error) {
+      console.error("my error", error);
       setError("There was an error setting your password. Please try again later.");
-      console.error(error);
     }
   };
 

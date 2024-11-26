@@ -49,8 +49,7 @@ const BusinessSignup: React.FC = () => {
         }
       );
       console.log(JSON.stringify(response?.data));
-      alert("Signup successful! You are now logged in.");
-      navigate("/optverification", { state: {email: formData.email} });
+      navigate("/optverification", { state: {email: formData.email} } );
       clearForm();
     } catch (error) {
       console.error("Error during signup:", error);
