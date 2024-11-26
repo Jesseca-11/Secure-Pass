@@ -261,7 +261,7 @@ const loginUserHandler = async (request, response) => {
 
                         // Respond with a 200 saying the user is logged in and send the token
                         return response.status(200).json({
-                            'Logged in as: ': user.email,
+                            email: user.email,
                             token: token,
                         });
                     }
