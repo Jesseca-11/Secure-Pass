@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -6,19 +6,33 @@ const OTPVerification: React.FC = () => {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string>("");
   const [isVerified, setIsVerified] = useState(false);
+  const [resendStatus, setResendStatus] = useState<string>("");
+  const [cooldown, setCooldown] = useState<number>(0);
   const navigate = useNavigate();
 
   const { state } = useLocation();
+  const email = state?.email || localStorage.getItem("email");
+  
+  useEffect(() => {
+    if (!email) {
+      setError("Email is missing. Please start the signup process again.");
+      navigate("/signup"); 
+    }
+  }, [email, navigate]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (cooldown > 0) {
+      timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setOtp(e.target.value);
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
-    console.log("data", {
-      email: String(state.email),
-      otp: otp,
-    });
     e.preventDefault();
 
     try {
@@ -35,15 +49,46 @@ const OTPVerification: React.FC = () => {
       );
 
       if (response.status === 200) {
-        console.log("response1", response);
         setIsVerified(true);
-        navigate("/create-password", { state: {email: state.email, verificationToken: response.data.data} } );
+        navigate("/create-password", {
+          state: { email: state.email, verificationToken: response.data.data },
+        });
       } else {
-        console.log("response2", response);
         setError("Invalid OTP. Please try again.");
       }
     } catch (error) {
       setError("There was an error verifying the OTP. Please try again later.");
+      console.error(error);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (cooldown > 0) return;
+
+    if (!email) {
+      setError("Email is missing. Please start the signup process again.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/resend-otp",
+        JSON.stringify({
+          email: String({email}),
+        }),
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+
+      setResendStatus("OTP has been resent successfully.");
+      setCooldown(30);
+    } catch (error) {
+      console.log("email", state.email);
+      setResendStatus(
+        "There was an error resending the OTP. Please try again later."
+      );
       console.error(error);
     }
   };
@@ -74,6 +119,22 @@ const OTPVerification: React.FC = () => {
           Verify OTP
         </button>
       </form>
+      <div className="mt-6 text-center">
+        
+          <button
+            onClick={handleResendOtp}
+            className={`w-full py-2 rounded-md ${
+              cooldown > 0 ? "bg-gray-300 cursor-not-allowed" : " text-gray-500  hover:text-blue-400"
+            }`}
+            disabled={cooldown > 0}
+          >
+            {cooldown > 0 ? `Resend OTP in ${cooldown}s` : "Resend OTP"}
+          </button>
+      
+        {resendStatus && (
+          <p className="mt-2 text-sm text-gray-600">{resendStatus}</p>
+        )}
+      </div>
     </div>
   );
 };

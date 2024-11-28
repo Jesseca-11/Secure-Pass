@@ -50,6 +50,7 @@ const BusinessSignup: React.FC = () => {
       );
       console.log(JSON.stringify(response?.data));
       navigate("/optverification", { state: {email: formData.email} } );
+      localStorage.setItem("email",  formData.email);
       clearForm();
     } catch (error) {
       console.error("Error during signup:", error);

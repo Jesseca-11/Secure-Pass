@@ -26,6 +26,7 @@ function App() {
           <Route path='/Customer-Signup' element={<CustomerSignup />} />
           <Route path='/Business-Signup' element={<BusinessSignup />} />
           <Route path='/optverification' element={ <OTPVerification /> } />
+          {/* <Route path='/resendotp' element={  } /> */}
           <Route path='/create-password' element={ <CreatePassword /> } />
           <Route path='/dispute-success' element={ <DisputeSuccess /> } />
 

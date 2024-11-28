@@ -20,7 +20,7 @@ const Home = () => {
                                         Secure payment
                                     </p>
                                     <p className="mt-2 mb-5 max-w-lg text-sm/10 text-gray-600 max-lg:text-center">
-                                        Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.
+                                        We ensure trust and transparency in online transactions.
                                     </p>
                                 </div>
 
@@ -42,7 +42,7 @@ const Home = () => {
                                 <div className="px-8 pt-8 sm:px-10 sm:pt-10">
                                     <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">Open Transaction</p>
                                     <p className="mt-2 max-w-lg text-sm/10 text-gray-600 max-lg:text-center">
-                                        Lorem ipsum, dolor sit amet consectetur adipisicing elit maiores impedit.
+                                        Designed to address the challenge of fraud and disputes in digital commerce.
                                     </p>
                                 </div>
                                 <div className="flex flex-1 items-center justify-center px-8 max-lg:pb-12 max-lg:pt-10 sm:px-10 lg:pb-2">
@@ -62,7 +62,7 @@ const Home = () => {
                                 <div className="px-8 pt-8 sm:px-10 sm:pt-10">
                                     <p className="mt-2 text-lg font-medium tracking-tight text-gray-950 max-lg:text-center">Security</p>
                                     <p className="mt-2 max-w-lg text-sm/10 text-gray-600 max-lg:text-center">
-                                        Morbi viverra dui mi arcu sed. Tellus semper adipiscing suspendisse semper morbi.
+                                        Secure XPay simplifies transactions while protecting both parties by prioritising trust and ease of use.
                                     </p>
                                 </div>
                                 <div className="flex flex-1 items-center justify-center px-8 max-lg:pb-12 max-lg:pt-10 sm:px-10 lg:pb-2">
@@ -84,7 +84,7 @@ const Home = () => {
                                         Trusted platform
                                     </p>
                                     <p className="mt-2 mb-5 max-w-lg text-sm/10 text-gray-600 max-lg:text-center">
-                                        Sit quis amet rutrum tellus ullamcorper ultricies libero dolor eget sem sodales gravida.
+                                        We hold payments securely for satisfaction of purchase.
                                     </p>
                                 </div>
                                         <div className="relative min-h-[30rem] w-full grow [container-type:inline-size] max-lg:mx-auto max-lg:max-w-sm ">

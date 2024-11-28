@@ -9,6 +9,7 @@ const CustomerSignup: React.FC = () => {
     phone: "",
   });
   const navigate = useNavigate();
+  
 
   const userInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -42,6 +43,7 @@ const CustomerSignup: React.FC = () => {
           );
           console.log(JSON.stringify(response?.data))
           navigate("/optverification", { state: {email: userData.email} } );
+          localStorage.setItem("email",  userData.email)
           clearForm();
   } catch (error) {
     console.error("Error during signup:", error);
