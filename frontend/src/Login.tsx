@@ -48,6 +48,11 @@ const Login: React.FC = () => {
 
       if (response.status === 200) {
         const { token, email } = response.data;
+
+        // Store token and email in localStorage
+        localStorage.setItem("token", token);
+        localStorage.setItem("email", email);
+        
         setAuthData(token, email);
         navigate("/dashboard");
         clearForm();

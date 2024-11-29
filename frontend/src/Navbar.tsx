@@ -4,13 +4,22 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useAuth } from "./context/AuthContex";
 import { Link, useNavigate } from "react-router-dom";
 
-const navigation = [
+type Navigation = {
+  name: string,
+  href: string
+}[]
+
+const mainNavigation : Navigation = [
   { name: "Home", href: "/" },
-  { name: "Transactions", href: "/transaction" },
   { name: "Dispute Resolution", href: "/dispute-resolution" },
   // { name: "Login", href: "/login" },
 
   // { name: 'Signup', href: '#' },
+];
+
+const sessionNavigation : Navigation = [
+  { name: "Transactions", href: "/transaction" },
+  { name: "Profile", href: "/profile" }
 ];
 
 const Navbar: React.FC = () => {
@@ -19,6 +28,9 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    // Remove from localStorage on logout
+    localStorage.removeItem("token");
+    localStorage.removeItem("email");
     setAuthData("", "");
     navigate("/login");
   };
@@ -51,8 +63,8 @@ const Navbar: React.FC = () => {
               <Bars3Icon aria-hidden="true" className="size-6" />
             </button>
           </div>
-          <div className="hidden lg:flex lg:gap-x-12">
-            {navigation.map((item) => (
+          <div className="hidden lg:flex lg:items-center lg:gap-x-12">
+            {mainNavigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
@@ -61,6 +73,8 @@ const Navbar: React.FC = () => {
                 {item.name}
               </Link>
             ))}
+
+
 
             {!token ? (
               <>
@@ -78,12 +92,23 @@ const Navbar: React.FC = () => {
                 </Link>
               </>
             ) : (
-              <button
-                onClick={handleLogout}
-                className=" text-xl font-semibold text-gray-700 bg-green-300 border px-4 py-1 hover:bg-green-600 hover:text-white rounded-full"
-              >
-                Logout
-              </button>
+              <>
+                {sessionNavigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className="text-sm/6 text-xl font-semibold text-gray-900"
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+                <button
+                  onClick={handleLogout}
+                  className=" text-xl font-semibold text-gray-700 bg-green-300 border px-4 py-1 hover:bg-green-600 hover:text-white rounded-full"
+                >
+                  Logout
+                </button>
+              </>
             )}
           </div>
         </nav>
@@ -112,7 +137,7 @@ const Navbar: React.FC = () => {
             <div className="mt-6 flow-root">
               <div className="-my-6 divide-y divide-gray-500/10">
                 <div className="space-y-2 py-6">
-                  {navigation.map((item) => (
+                  {mainNavigation.map((item) => (
                     <Link
                       key={item.name}
                       to={item.href}
@@ -125,24 +150,35 @@ const Navbar: React.FC = () => {
                     <>
                       <Link
                         to="/login"
-                        className="block rounded-lg px-3 py-2 sm:hidden text-base font-semibold text-gray-900 hover:bg-gray-50"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold text-gray-900 hover:bg-gray-50"
                       >
                         Login
                       </Link>
                       <Link
                         to="/signup"
-                        className="block rounded-lg px-3 py-2 text-base font-semibold text-gray-900 hover:bg-gray-50"
+                        className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold text-gray-900 hover:bg-gray-50"
                       >
                         Signup
                       </Link>
                     </>
                   ) : (
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left rounded-lg px-3 py-2 text-base font-semibold text-red-600 hover:bg-red-100"
-                    >
-                      Logout
-                    </button>
+                    <>
+                      {sessionNavigation.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.href}
+                          className="-mx-3 block rounded-lg px-3 py-2 text-base/7 font-semibold text-gray-900 hover:bg-gray-50"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                      <button
+                        onClick={handleLogout}
+                        className="-mx-3 block w-full text-left rounded-lg px-3 py-2 text-base font-semibold text-red-600 hover:bg-red-100"
+                      >
+                        Logout
+                      </button>
+                    </>
                   )}
                 </div>
               </div>

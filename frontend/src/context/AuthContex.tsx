@@ -10,17 +10,22 @@ interface AuthContextProps {
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [email, setEmail] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem("token"));
+  const [email, setEmail] = useState<string | null>(() => localStorage.getItem("email"));
   
   const setAuthData = (token: string, email: string) => {
     setToken(token);
     setEmail(email);
+    localStorage.setItem("token", token);
+    localStorage.setItem("email", email);
   };
+
 
   const clearAuthData = () => {
     setToken(null);
     setEmail(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("email");
   };
 
   return (

@@ -4,8 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 const Signup: React.FC = () => {
     const navigate = useNavigate();
-    
-
 
     return (
         <div className="min-h-screen bg-gray-300 place-content-center pb-10">
